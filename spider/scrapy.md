@@ -1,4 +1,4 @@
-# rscrapy
+# Scrapy
 
 ## 安装
 
@@ -305,4 +305,97 @@ class Scrapy01TestItem(scrapy.Item):
     name = scrapy.Field()
     href = scrapy.Field()
 ```
+
+## [Scrapy CrawlSpider](https://geek-docs.com/scrapy/scrapy-tutorials/scrapy-crawlspider.html)
+
+### 创建爬虫文件
+
+```
+# scrapy genspider 文件名  网页地址
+scrapy genspider -t crawl test www.baidu.com
+```
+
+**Scrapy CrawlSpider**，继承自`Spider`, 爬取网站常用的爬虫，其定义了一些规则(rule)方便追踪或者是过滤`link`。 也许该spider并不完全适合您的特定网站或项目，但其对很多情况都是适用的。 因此您可以以此为基础，修改其中的方法，当然您也可以实现自己的`spider`。
+
+### class scrapy.contrib.spiders.CrawlSpider
+
+`CrawlSpider`继承自`Spider`, 爬取网站常用的爬虫，其定义了一些规则(`rule`)方便追踪或者是过滤link。 也许该spider并不完全适合您的特定网站或项目，但其对很多情况都是适用的。 因此您可以以此为基础，修改其中的方法，当然您也可以实现自己的`spider`。
+
+除了从`Spider`继承过来的(您必须提供的)属性外，其提供了一个新的属性:
+
+- **rules**
+
+一个包含一个(或多个) `Rule` 对象的集合(list)。 每个 `Rule` 对爬取网站的动作定义了特定表现。 `Rule`对象在下边会介绍。 如果多个rule匹配了相同的链接，则根据他们在本属性中被定义的顺序，第一个会被使用。
+
+该spider也提供了一个可复写(`overrideable`)的方法:
+
+- **parse_start_url(response)**
+
+当`start_url`的请求返回时，该方法被调用。 该方法分析最初的返回值并必须返回一个 `Item` 对象或者 一个 `Request` 对象或者 一个可迭代的包含二者对象。
+
+### 爬取规则
+
+```py
+class scrapy.contrib.spiders.Rule(link_extractor, callback=None, cb_kwargs=None, follow=None, process_links=None, process_request=None)
+```
+
+`link_extractor` 是一个 `Link Extractor` 对象。 其定义了如何从爬取到的页面提取链接。
+
+`callback` 是一个callable或string(该spider中同名的函数将会被调用)。 从`link_extractor`中每获取到链接时将会调用该函数。该回调函数接受一个response作为其第一个参数， 并返回一个包含 Item 以及(或) Request 对象(或者这两者的子类)的列表(list)。
+
+> 当编写爬虫规则时，请避免使用 `parse` 作为回调函数。 由于 `CrawlSpider` 使用 parse 方法来实现其逻辑，如果 您覆盖了 parse 方法，crawl spider 将会运行失败。
+
+- `cb_kwargs`: 包含传递给回调函数的参数(keyword argument)的字典。
+- `follow`: 是一个布尔(boolean)值，指定了根据该规则从response提取的链接是否需要跟进。 如果 callback 为None， follow 默认设置为 True ，否则默认为 False 。
+- `process_links`: 是一个callable或string(该spider中同名的函数将会被调用)。 从link_extractor中获取到链接列表时将会调用该函数。该方法主要用来过滤。
+- `process_request`: 是一个callable或string(该spider中同名的函数将会被调用)。 该规则提取到每个request时都会调用该函数。该函数必须返回一个request或者None。 (用来过滤request)
+
+### CrawlSpider 示例
+
+```py
+import scrapy
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor
+
+class MySpider(CrawlSpider):
+    name = 'geek-docs'
+    allowed_domains = ['yiibai.com']
+    start_urls = ['https://www.yiibai.com/cplusplus/what-is-cpp.html']
+
+    rules = (
+        # 提取匹配 'yiibai.com/cplusplus' (但不匹配 'subsection.php') 的链接并跟进链接(没有callback意味着follow默认为True)
+        Rule(LinkExtractor(allow=('yiibai.com/cplusplus', ), deny=('subsection\.php', ))),
+
+        # 提取匹配 'item.php' 的链接并使用spider的parse_item方法进行分析
+        Rule(LinkExtractor(allow=('item\.php', )), callback='parse_item'),
+    )
+
+    def parse_item(self, response):
+        self.log('Hi, this is an item page! %s' % response.url)
+
+        item = scrapy.Item()
+        item['id'] = response.xpath('//td[@id="item_id"]/text()').re(r'ID: (\d+)')
+        item['name'] = response.xpath('//td[@id="item_name"]/text()').extract()
+        item['description'] = response.xpath('//td[@id="item_description"]/text()').extract()
+        return item
+```
+
+`CrawlSpider`将从`yiibai.com`的首页开始爬取，获取`yiibai.com/cplusplus`以及`item`的链接并，对后者调用 **parse_item** 方法。 当item获得返回`response`时，将使用`XPath`处理HTML并生成一些数据填入Item中。
+
+## 日志信息和日志等级
+
+**日志级别：**
+
+1. CRIRICAL：严重错误
+2. ERROR：一般错误
+3. WARNING：警告
+4. INFO：一级信息
+5. DEBUG：调试信息
+
+默认日志等级是DEBUG，只有出现DEBUG才会出现。
+
+**settings.py 文件设置**：
+
+- LOG_FILE：将屏幕显示的信息全部记录到文件中，屏幕不在显示，注意文件名一定是.log
+- LOG_LEVEL: 设置日志的等级，就显示哪些，不显示哪些
 
