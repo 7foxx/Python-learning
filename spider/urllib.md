@@ -162,6 +162,78 @@ data = urllib.parse.urlencode(data)
 print(data) # wd=%E5%8E%9F%E7%A5%9E
 ```
 
+## urllib.error
+
+urllib.error 模块为 urllib.request 所引发的异常定义了异常类，基础异常类是 URLError。
+
+urllib.error 包含了两个方法，URLError 和 HTTPError。
+
+URLError 是 OSError 的一个子类，用于处理程序在遇到问题时会引发此异常（或其派生的异常），包含的属性 reason 为引发异常的原因。
+
+HTTPError 是 URLError 的一个子类，用于处理特殊 HTTP 错误例如作为认证请求的时候，包含的属性 **code** 为 HTTP 的状态码， **reason** 为引发异常的原因，**headers** 为导致 HTTPError 的特定 HTTP 请求的 HTTP 响应头。
+
+对不存在的网页抓取并处理异常:
+
+```py
+import urllib.request
+import urllib.error
+
+myURL1 = urllib.request.urlopen("https://www.runoob.com/")
+print(myURL1.getcode())   # 200
+
+try:
+    myURL2 = urllib.request.urlopen("https://www.runoob.com/no.html")
+except urllib.error.HTTPError as e:
+    if e.code == 404:
+        print(404)   # 404
+```
+
+## encode()方法
+
+**描述**
+
+encode() 方法以 *encoding* **指定的编码格式<span style="color:red">编码</span>字符串**。errors参数可以指定不同的错误处理方案。
+
+**语法**
+
+encode()方法语法：
+
+```py
+str.encode(encoding='UTF-8',errors='strict')
+```
+
+**参数**
+
+- encoding -- 要使用的编码，如"UTF-8"。
+- errors -- 设置不同错误的处理方案。默认为 'strict',意为编码错误引起一个UnicodeError。 其他可能得值有 'ignore', 'replace', 'xmlcharrefreplace', 'backslashreplace' 以及通过 codecs.register_error() 注册的任何值。
+
+**返回值**
+
+该方法返回编码后的字符串。
+
+## decode()方法
+
+**描述**
+
+decode() 方法以 *encoding* **指定的编码格式<span style="color:red">解码</span>字符串**。默认编码为字符串编码。
+
+**语法**
+
+decode()方法语法：
+
+```py
+str.decode(encoding='UTF-8',errors='strict')
+```
+
+**参数**
+
+- encoding -- 要使用的编码，如"UTF-8"。
+- errors -- 设置不同错误的处理方案。默认为 'strict',意为编码错误引起一个UnicodeError。 其他可能得值有 'ignore', 'replace', 'xmlcharrefreplace', 'backslashreplace' 以及通过 codecs.register_error() 注册的任何值。
+
+**返回值**
+
+该方法返回解码后的字符串。
+
 ## post请求案例百度翻译
 
 - Post 请求的参数必须编码，先通过`urlencode`转换为二进制形式，在通过`encode`转换为`utf-8`
@@ -183,7 +255,7 @@ data = {
 }
 
 # post 请求参数必须进行编码
-# urlencode 编码的是二进制的所以我们需要用 encode 再次编码为 utf-8 的格式
+# urlencode 是讲对象转化为query路径参数的形式（kw=spider）,如果用post请则必须通过encode('utf-8')在将其转化为二进制形式
 data = parse.urlencode(data).encode('utf-8')
 
 # 请求对象定制
@@ -198,5 +270,36 @@ context = response.read().decode('utf8')
 obj = json.loads(context)
 
 print(obj)
+```
+
+## Cookie反爬
+
+有的加密接口会携带cookie或者其他令牌，这个不是固定的每个接口安全方式不一样，所有需要去分析，一般cookie是最常见的，在headers中添加
+
+```json
+headers = {
+    'Cookie': 'BAIDUID=A78C83243EC370D64EB9127421CDCD80:FG=1; BAIDUID_BFESS=A78C83243EC370D64EB9127421CDCD80:FG=1; BDUSS=duU0hBbzJhflBMQVZRMzB1Q0xRcHVKendKdnhRVjhiZkN1RzRwd0duQmc1eHRqSVFBQUFBJCQAAAAAAAAAAAEAAACWCc5fZ3bXytS0aG91c2UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBa9GJgWvRiNV; BDUSS_BFESS=duU0hBbzJhflBMQVZRMzB1Q0xRcHVKendKdnhRVjhiZkN1RzRwd0duQmc1eHRqSVFBQUFBJCQAAAAAAAAAAAEAAACWCc5fZ3bXytS0aG91c2UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBa9GJgWvRiNV; BIDUPSID=A78C83243EC370D64EB9127421CDCD80; PSTM=1660276134; ZFY=lTybp1mqT34VXA1zk3GnQ7ZEuvOwOkTsrZ5peYD5HLk:C; APPGUIDE_10_0_2=1; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; HISTORY_SWITCH=1; SOUND_SPD_SWITCH=1; SOUND_PREFER_SWITCH=1; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1660527759; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1660527759; ab_sr=1.0.1_Y2RiYmNlYzA0MTQ1ZjA4Y2UzYWVjMDRmZWQxZjIwOTAyMGY3MDdmOThhYjIyZDk3ZTg2ZWE0OGE2YmIxYTBkNjIxYWI2ZGY3NjMzYmZiMTUwYjZkYTVkMWFhMzgzZWNlZjk4ZjYzYjRlODI1OTE5NjNhNDk1YTNmYzA2YTZjZDc1OGM2M2ZiMDkyM2JhMWU2MDExNWQwMWNmZWMyNTA3ZWViNmQzZjlmNGFjZWUwOGNmYmFkZDhhNDQxYjFlNTZi'
+}
+```
+
+## handler代理
+
+```py
+xxxxx
+
+request = request.Request(url, data, headers)
+
+proxies = {
+	'http':xxxxx
+}
+
+# hander build_opener open
+handler = urllib.request.build_.ProxyHandler(proxies = proxies)
+
+openr = urllib.request.build_opener(handler)
+
+response = openr.open(request)
+
+xxxxx
 ```
 

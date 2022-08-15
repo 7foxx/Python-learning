@@ -1,0 +1,31 @@
+import urllib.request as request
+import urllib.parse as parse
+import json
+
+url = 'https://fanyi.baidu.com/v2transapi?from=zh&to=en'
+
+headers = {
+    'Cookie': 'BAIDUID=A78C83243EC370D64EB9127421CDCD80:FG=1; BAIDUID_BFESS=A78C83243EC370D64EB9127421CDCD80:FG=1; BDUSS=duU0hBbzJhflBMQVZRMzB1Q0xRcHVKendKdnhRVjhiZkN1RzRwd0duQmc1eHRqSVFBQUFBJCQAAAAAAAAAAAEAAACWCc5fZ3bXytS0aG91c2UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBa9GJgWvRiNV; BDUSS_BFESS=duU0hBbzJhflBMQVZRMzB1Q0xRcHVKendKdnhRVjhiZkN1RzRwd0duQmc1eHRqSVFBQUFBJCQAAAAAAAAAAAEAAACWCc5fZ3bXytS0aG91c2UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBa9GJgWvRiNV; BIDUPSID=A78C83243EC370D64EB9127421CDCD80; PSTM=1660276134; ZFY=lTybp1mqT34VXA1zk3GnQ7ZEuvOwOkTsrZ5peYD5HLk:C; APPGUIDE_10_0_2=1; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; HISTORY_SWITCH=1; SOUND_SPD_SWITCH=1; SOUND_PREFER_SWITCH=1; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1660527759; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1660527759; ab_sr=1.0.1_Y2RiYmNlYzA0MTQ1ZjA4Y2UzYWVjMDRmZWQxZjIwOTAyMGY3MDdmOThhYjIyZDk3ZTg2ZWE0OGE2YmIxYTBkNjIxYWI2ZGY3NjMzYmZiMTUwYjZkYTVkMWFhMzgzZWNlZjk4ZjYzYjRlODI1OTE5NjNhNDk1YTNmYzA2YTZjZDc1OGM2M2ZiMDkyM2JhMWU2MDExNWQwMWNmZWMyNTA3ZWViNmQzZjlmNGFjZWUwOGNmYmFkZDhhNDQxYjFlNTZi'
+}
+
+data = {
+    "from": 'zh',
+    "to": 'en',
+    "query": '蜘蛛',
+    "transtype": 'realtime',
+    "simple_means_flag": '3',
+    "sign": '347277.110524',
+    "token": '884b45a198e6dd03bdab93310e18fe83',
+    "domain": 'common'
+}
+
+data = parse.urlencode(data).encode('utf-8')
+print(data)
+
+urlall = request.Request(url, data, headers)
+
+response = request.urlopen(urlall)
+
+res = json.loads(response.read().decode('utf8'))
+
+print(res)
