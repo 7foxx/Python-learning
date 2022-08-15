@@ -399,3 +399,24 @@ class MySpider(CrawlSpider):
 - LOG_FILE：将屏幕显示的信息全部记录到文件中，屏幕不在显示，注意文件名一定是.log
 - LOG_LEVEL: 设置日志的等级，就显示哪些，不显示哪些
 
+## POST请求
+
+```py
+import scrapy
+
+class FySpider(scrapy.Spider):
+    name = 'fy'
+    # allowed_domains = ['www.baidu.com']
+    start_urls = ['https://fanyi.baidu.com/sug']
+
+    def start_requests(self):
+        data={
+            'kw':"beautiful"
+        }
+        for url in self.start_urls:
+            yield  scrapy.FormRequest(url=url,formdata=data,callback=self.parse)
+
+    def parse(self, response):
+        print(response.text)
+```
+
