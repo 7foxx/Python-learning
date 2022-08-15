@@ -1,4 +1,4 @@
-# scrapy
+# rscrapy
 
 ## 安装
 
@@ -30,16 +30,24 @@ sudo apt-get install python-dev python-pip libxml2-dev libxslt1-dev zlib1g-dev l
 sudo pip install scrapy
 ```
 
-### Mac OS 安装方式**
+### Mac OS 安装方式
 
-对于Mac OS系统来说，由于系统本身会引用自带的python2.x的库，因此默认安装的包是不能被删除的，但是你用python2.x来安装Scrapy会报错，用python3.x来安装也是报错，我最终没有找到直接安装Scrapy的方法，所以我用另一种安装方式来说一下安装步骤，解决的方式是就是使用virtualenv来安装。
+pip版本必须转22+，升级pip版本
+
+```
+ pip3 install --upgrade pip
+```
+
+使用清华源下载
 
 ```sh
-$ sudo pip install virtualenv
-$ virtualenv scrapyenv
-$ cd scrapyenv
-$ source bin/activate
-$ pip install Scrapy
+ pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple scrapy 
+```
+
+> 注意：在mac中使用 scrapy 指令必须在前面加上 python3 -m
+
+```
+python3 -m scrapy
 ```
 
 ## 新建项目
@@ -155,5 +163,146 @@ ROBOTSTXT_OBEY = True 注释该行
 
 > 注意：每一个`selector`对象可以再次的去使用`xpath`或者`css`方法
 
+## 使用管道封装
 
+1、items.py 在项目目标文件中定义
+
+```py
+class Scrapy01TestItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    # src = scrapy.Field()
+    name = scrapy.Field()
+    href = scrapy.Field()
+```
+
+2、爬虫住文件
+
+```py
+import scrapy
+from scrapy_01_test.items import Scrapy01TestItem
+
+
+class TestSpider(scrapy.Spider):
+    name = 'test'
+    allowed_domains = ['bbs.mihoyo.com']
+    start_urls = ['https://bbs.mihoyo.com/ys/obc/channel/map/189/25?bbs_presentation_style=no_header']
+
+    def parse(self, response):
+        ul = response.xpath('//*[@id="__layout"]/div/div[2]/div[2]/div/div[1]/div[2]/ul/li/div/ul/li[1]/div/div/a')
+        for li in ul:
+            href = li.xpath('@href').extract_first()
+            name = li.xpath('.//div[2]/text()').extract_first()
+
+            # 调用Scrapy01TestItem将数据存储中目标文件中
+            # data = Scrapy01TestItem(href=href, name=name)
+
+            # 第二页的地址
+            url = 'https://bbs.mihoyo.com' + href
+
+            yield scrapy.Request(url, callback=self.parse_second, meta={
+                'href': href,
+                'name': name
+            })
+
+            # 每次循环得到的结果交给管道，如果是多个管道链接调用泽在最后一个执行的管道中 yield 最终的数据
+            # yield data
+
+    def parse_second(self, response):
+        src = response.xpath(
+            '//*[@id="__layout"]/div/div[2]/div[2]/div/div[1]/div[3]/div[3]/div[3]/div[1]/div[1]/div/ul[2]/li/img/@src').extract_first()
+        name = response.meta['name']
+        href = response.meta['href']
+
+        # 调用Scrapy01TestItem将数据存储中目标文件中
+        data = Scrapy01TestItem(src=src, href=href, name=name)
+        # 每次循环得到的结果交给管道，如果是多个管道链接调用泽在最后一个执行的管道中 yield 最终的数据
+        yield data
+```
+
+3、在`settings.py`中开启管道
+
+```py
+# Configure item pipelines
+# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+ITEM_PIPELINES = {
+   # 管道可以有多个
+   # scrapy_01_test.pipelines.Scrapy01TestPipeline 管道的类名路径
+   # 300 是管道的优先级，范围1-1000，值越小优先级越高
+   'scrapy_01_test.pipelines.Scrapy01TestPipeline': 300,
+}
+```
+
+4、pipelines.py 管道文件
+
+```py
+# Define your item pipelines here
+#
+# Don't forget to add your pipeline to the ITEM_PIPELINES setting
+# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+
+
+# useful for handling different item types with a single interface
+import urllib.request
+
+from itemadapter import ItemAdapter
+
+
+# 必须在setings中开启管道才能使用
+class Scrapy01TestPipeline:
+    # 在爬虫文件执行之前调用一次
+    def __init__(self):
+        self.fb = None
+        self.initdata = []
+
+    def open_spider(self, spider):
+        pass
+
+    # itme 就是在yield后面的对象
+    def process_item(self, item, spider):
+        self.initdata.append(item)
+        return item
+
+    # 在爬虫文件执行之后调用一次
+    def close_spider(self, spider):
+        # w 模式每次执行都会打开文件覆盖之前的内容
+        self.fb = open('data.json', 'a', encoding='utf-8')
+        # write 方法必须写一个字符串
+        self.fb.write(str(self.initdata))
+        # 关闭
+        self.fb.close()
+
+
+# 多管道开始
+#    在 settings 中开启管道
+#    'scrapy_01_test.pipelines.DownLoadYS': 301,
+class DownLoadYS:
+    # itme 就是在yield后面的对象
+    def process_item(self, item, spider):
+        url = item.get('src')
+        filename = f'./img/{item.get("name")}.jpg'
+
+        urllib.request.urlretrieve(url=url, filename=filename)
+
+        return item
+```
+
+5、items 目标文件
+
+```py
+# Define here the models for your scraped items
+#
+# See documentation in:
+# https://docs.scrapy.org/en/latest/topics/items.html
+
+import scrapy
+
+
+class Scrapy01TestItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    src = scrapy.Field()
+    name = scrapy.Field()
+    href = scrapy.Field()
+```
 

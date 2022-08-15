@@ -62,9 +62,13 @@ NEWSPIDER_MODULE = 'scrapy_01_test.spiders'
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'scrapy_01_test.pipelines.Scrapy01TestPipeline': 300,
-#}
+ITEM_PIPELINES = {
+   # 管道可以有多个
+   # scrapy_01_test.pipelines.Scrapy01TestPipeline 管道的类名路径
+   # 300 是管道的优先级，范围1-1000，值越小优先级越高
+   'scrapy_01_test.pipelines.Scrapy01TestPipeline': 300,
+   'scrapy_01_test.pipelines.DownLoadYS': 301,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
