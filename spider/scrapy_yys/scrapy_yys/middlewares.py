@@ -84,7 +84,11 @@ class ScrapyYysDownloaderMiddleware:
         options.add_experimental_option('excludeSwitches', ['enable-automation'])    # 开发者模式
 
         # executable_path 是你的 selenium 调试工具的路径
-        driver = webdriver.Chrome(executable_path='/Users/mulin/Chrome/chromedriver', options=options)
+        # win
+        executable_path = "D:\peak\Python\\xuexi\spider\scrapy_yys\chromedriver_win.exe"
+        # M1
+        # executable_path = 'spider/scrapy_yys/chromedriver.exe'
+        driver = webdriver.Chrome(executable_path=executable_path, options=options)
         # 移除 `window.navigator.webdriver`. scrapy 默认为True
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
@@ -99,7 +103,9 @@ class ScrapyYysDownloaderMiddleware:
         sleep(0.5)
         content = driver.page_source
         # 关闭 webdriver
-        driver.quit()
+        # driver.quit()
+        # print('关闭 webdriver')
+        request.meta["driver"] = driver
 
         # 引入 HtmlResponse 函数来重新返回 response 对象
         return HtmlResponse(url=request.url, body=content, request=request, encoding='utf-8')

@@ -16,9 +16,7 @@ class ScrapyYysItem(scrapy.Item):
     quality = scrapy.Field()
     # 定位
     positioning = scrapy.Field()
-    # 头像
-    iconUrl = scrapy.Field()
-    # 觉醒前例会图
-    subjectImg = scrapy.Field()
-    # 属性述职
-    AttributeData = scrapy.Field()
+    # 图片
+    imgUrl = scrapy.Field()
+    # 式神详细信息
+    HellspawnData = scrapy.Field()

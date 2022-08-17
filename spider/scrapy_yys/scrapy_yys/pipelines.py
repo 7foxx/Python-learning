@@ -12,6 +12,13 @@ from urllib.request import urlretrieve
 
 
 class ScrapyYysPipeline:
+    def __init__(self):
+        self.fb = None
+
+    def open_spider(self,spider):
+        # w 模式每次执行都会打开文件覆盖之前的内容
+        self.fb = open('data.json', 'a', encoding='utf-8')
+
     def process_item(self, item, spider):
         name = item.get("name")
         path = f'../img/{name}'
@@ -20,7 +27,18 @@ class ScrapyYysPipeline:
             # 不存在泽创建目录
             os.makedirs(path)
         # 下载icon头像
-        urlretrieve(item.get("iconUrl"), f'{path}/icon_{name}.png')
+        urlretrieve(item["imgUrl"]["icon_1"], f'{path}/icon_1_{name}.png')
+        urlretrieve(item["imgUrl"]["icon_2"], f'{path}/icon_2_{name}.png')
         # 下载例会
-        urlretrieve(item.get("subjectImg"), f'{path}/{name}.png')
+        urlretrieve(item["imgUrl"]["subjectImg"], f'{path}/max_1_{name}.png')
+        # 下载技能
+        for v in item["imgUrl"]["skillIconArr"]: urlretrieve(v[1], f'{path}/{v[0]}.png')
+        # 删除imgUrl
+        del item["imgUrl"]
+        # write 方法必须写一个字符串
+        self.fb.write(str(item))
         return item
+
+    def close_spider(self,spider):
+        # 关闭
+        self.fb.close()
