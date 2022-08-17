@@ -18,6 +18,7 @@ class ScrapyYysPipeline:
     def open_spider(self,spider):
         # w 模式每次执行都会打开文件覆盖之前的内容
         self.fb = open('data.json', 'a', encoding='utf-8')
+        self.fb.write("[")
 
     def process_item(self, item, spider):
         name = item.get("name")
@@ -36,9 +37,10 @@ class ScrapyYysPipeline:
         # 删除imgUrl
         del item["imgUrl"]
         # write 方法必须写一个字符串
-        self.fb.write(str(item))
+        self.fb.write(','+str(item))
         return item
 
     def close_spider(self,spider):
+        self.fb.write("]")
         # 关闭
         self.fb.close()

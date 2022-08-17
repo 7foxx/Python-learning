@@ -18,7 +18,7 @@ class YysSpider(scrapy.Spider):
         # 删除前两个元素
         div_list.pop(0)
         div_list.pop(0)
-        for li in [div_list[3], div_list[4]]:
+        for li in div_list:
             # 名称
             name = li.xpath('.//div/div[2]/div/span[1]/text()').extract_first()
             CV = li.xpath('.//div/div[2]/div/span[2]/text()').extract_first()
@@ -47,7 +47,7 @@ class YysSpider(scrapy.Spider):
         # 获取技能信息函数
         def changeSkill(response, typeText):
             # 变身前
-            container = response.xpath('//*[@id="root"]//div[@class="skillContent___3IYll"]/div')
+            container = response.xpath('//*[@id="root"]//div[@class="skillContent___3IYll"]/div[@class="container___kfFAF"]')
             skillArr = []
             for div in container:
                 # 技能图片ICON
