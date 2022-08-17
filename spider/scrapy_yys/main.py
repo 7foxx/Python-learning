@@ -1,8 +1,8 @@
-import json
+import pickle
 
 obj = {
     "a":1,
     "b":2,
     "c":3,
 }
-print(json.dumps(obj))
+print(pickle.dumps(obj))

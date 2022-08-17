@@ -18,7 +18,7 @@ class YysSpider(scrapy.Spider):
         # 删除前两个元素
         div_list.pop(0)
         div_list.pop(0)
-        for li in div_list:
+        for li in [div_list[0],div_list[1]]:
             # 名称
             name = li.xpath('.//div/div[2]/div/span[1]/text()').extract_first()
             CV = li.xpath('.//div/div[2]/div/span[2]/text()').extract_first()
@@ -30,11 +30,11 @@ class YysSpider(scrapy.Spider):
             url = f'https://act.ds.163.com/41bab2a03a354547/item-detail?{urlencode({"id": name})}'
 
             yield scrapy.Request(url=url, callback=self.parse_item, meta={
-                'name': name,
-                'CV': CV,
-                'quality': quality,
-                'positioning': positioning,
-                'iconUrl': iconUrl
+                "name": name,
+                "CV": CV,
+                "quality": quality,
+                "positioning": positioning,
+                "iconUrl": iconUrl
             })
 
     def parse_item(self, response):
@@ -64,7 +64,7 @@ class YysSpider(scrapy.Spider):
 
                 # 描述
                 skillText = div.xpath('.//div[2]/p').extract_first()
-                skill['描述'] = skillText
+                skill["描述"] = skillText
 
                 # 升级
                 skillLevelUp = []
@@ -75,7 +75,7 @@ class YysSpider(scrapy.Spider):
                     skillLevelUp.append({
                         key: value
                     })
-                skill['等级提升'] = skillLevelUp
+                skill["等级提升"] = skillLevelUp
 
                 skillArr.append(skill)
                 # 当前式神所有技能图标
@@ -120,7 +120,7 @@ class YysSpider(scrapy.Spider):
                     '___')[
                     0].replace('level', '')
             AttributeData.append({
-                key: [value1, value2.strip()],
+                f"{key}": [value1, value2.strip()],
                 "quality": [val1, val2]
             })
 

@@ -85,18 +85,18 @@ class ScrapyYysDownloaderMiddleware:
 
         # executable_path 是你的 selenium 调试工具的路径
         # win
-        executable_path = "D:\peak\Python\\xuexi\spider\scrapy_yys\chromedriver_win.exe"
+        # executable_path = "D:\peak\Python\\xuexi\spider\scrapy_yys\chromedriver_win.exe"
         # M1
-        # executable_path = 'spider/scrapy_yys/chromedriver.exe'
+        executable_path = '/Users/mulin/Code/Python/learning/Python-learning/spider/scrapy_yys/chromedriver'
         driver = webdriver.Chrome(executable_path=executable_path, options=options)
         # 移除 `window.navigator.webdriver`. scrapy 默认为True
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                     Object.defineProperty(navigator, 'webdriver', {
-                       get: () =&gt; undefined
-                     })
-                   """
-        })
+        # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #              Object.defineProperty(navigator, 'webdriver', {
+        #                get: () =&gt; undefined
+        #              })
+        #            """
+        # })
 
         driver.get(request.url)
         # driver.implicitly_wait(5)
