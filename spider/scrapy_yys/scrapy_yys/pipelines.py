@@ -42,7 +42,9 @@ class ScrapyYysPipeline:
             os.makedirs(path)
         # 下载icon头像
         urlretrieve(item["imgUrl"]["icon_1"], f'{path}/icon_1_{name}.png')
-        urlretrieve(item["imgUrl"]["icon_2"], f'{path}/icon_2_{name}.png')
+        # 判断是否有觉醒
+        if item["imgUrl"]["icon_2"]:
+            urlretrieve(item["imgUrl"]["icon_2"], f'{path}/icon_2_{name}.png')
         # 下载例会
         urlretrieve(item["imgUrl"]["subjectImg"], f'{path}/max_1_{name}.png')
         # 下载技能

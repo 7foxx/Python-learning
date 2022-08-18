@@ -18,7 +18,7 @@ class YysSpider(scrapy.Spider):
         # 删除前两个元素
         div_list.pop(0)
         div_list.pop(0)
-        for li in [div_list[0],div_list[1]]:
+        for li in div_list:
             # 名称
             name = li.xpath('.//div/div[2]/div/span[1]/text()').extract_first()
             CV = li.xpath('.//div/div[2]/div/span[2]/text()').extract_first()
@@ -47,7 +47,8 @@ class YysSpider(scrapy.Spider):
         # 获取技能信息函数
         def changeSkill(response, typeText):
             # 变身前
-            container = response.xpath('//*[@id="root"]//div[@class="skillContent___3IYll"]/div[@class="container___kfFAF"]')
+            container = response.xpath(
+                '//*[@id="root"]//div[@class="skillContent___3IYll"]/div[@class="container___kfFAF"]')
             skillArr = []
             for div in container:
                 # 技能图片ICON
@@ -109,6 +110,7 @@ class YysSpider(scrapy.Spider):
             key = li.xpath('.//*[@class="leftFeature___3fDr2"]/text()').extract_first()
             value1 = li.xpath('.//*[@class="rightFeature___1uJ5q"]/text()[1]').extract_first()
             value2 = li.xpath('.//*[@class="rightFeature___1uJ5q"]/text()[2]').extract_first()
+            if value2: value2.strip()
 
             # 属性评级
             val1 = \
@@ -116,11 +118,13 @@ class YysSpider(scrapy.Spider):
                     '___')[
                     0].replace('level', '')
             val2 = \
-                li.xpath(f'//*[@id="root"]/div/div[1]/div[2]/div/div[{i + 1}]/span[4]/@class').extract_first().split(
+                li.xpath(f'//*[@id="root"]/div/div[1]/div[2]/div/div[{i + 1}]/span[4]/@class').extract_first()
+            if val2:
+                val2 = val2.split(
                     '___')[
                     0].replace('level', '')
             AttributeData.append({
-                f"{key}": [value1, value2.strip()],
+                f"{key}": [value1, value2],
                 "quality": [val1, val2]
             })
 
@@ -139,20 +143,23 @@ class YysSpider(scrapy.Spider):
 
         # 推荐御魂
         RoyalSoulArr = response.xpath('//*[@id="root"]/div/div[4]/div[@class="container___3BN3k"]')
-        RoyalSoul = []
-        for div in RoyalSoulArr:
-            # 方案
-            soulCount1 = div.xpath('.//div[2]/span[2]/text()').extract_first()
-            soulCount2 = div.xpath('.//div[2]/span[4]/text()').extract_first()
-            # 主属性
-            mainAttr = {}
-            for v in [2, 4, 6]:  mainAttr[v] = div.xpath(
-                f'//*[@id="root"]/div/div[4]/div[2]/div[3]/span[{v + 1}]/text()').extract_first()
+        if RoyalSoulArr:
+            RoyalSoul = []
+            for div in RoyalSoulArr:
+                # 方案
+                soulCount1 = div.xpath('.//div[2]/span[2]/text()').extract_first()
+                soulCount2 = div.xpath('.//div[2]/span[4]/text()').extract_first()
+                # 主属性
+                mainAttr = {}
+                for v in [2, 4, 6]:  mainAttr[v] = div.xpath(
+                    f'//*[@id="root"]/div/div[4]/div[2]/div[3]/span[{v + 1}]/text()').extract_first()
 
-            RoyalSoul.append({
-                "方案": [soulCount1, soulCount2],
-                "主属性": mainAttr
-            })
+                RoyalSoul.append({
+                    "方案": [soulCount1, soulCount2],
+                    "主属性": mainAttr
+                })
+        else:
+            RoyalSoul = []
 
         yield ScrapyYysItem(
             name=response.meta['name'],
