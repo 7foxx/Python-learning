@@ -266,7 +266,7 @@ class Scrapy01TestPipeline:
     # 在爬虫文件执行之后调用一次
     def close_spider(self, spider):
         # w 模式每次执行都会打开文件覆盖之前的内容
-        self.fb = open('data.json', 'a', encoding='utf-8')
+        self.fb = open('muihoyo/ys/data.json', 'a', encoding='utf-8')
         # write 方法必须写一个字符串
         self.fb.write(str(self.initdata))
         # 关闭
